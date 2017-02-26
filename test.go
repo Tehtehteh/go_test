@@ -19,29 +19,35 @@ func indexPage(resp http.ResponseWriter, req *http.Request){
 		id int
 		title string
 		text string
-		posts []map[string]string
 	)
+	//posts := make(chan []map[string]string)
+	post_go := make(chan map[string]string)
 	var post = make(map[string]string)
 	if err != nil {
 		panic("Something went wrong with template")
 	}
-	res, err := db.Query("SELECT id, title, text FROM blog_post")
-	if err != nil {
-		panic("Something went wrong with DB query")
-	}
-	defer res.Close()
-	for res.Next(){
-		err := res.Scan(&id, &title, &text)
-		if err != nil { log.Fatal(err)}
-		post["title"] = title
-		post["text"] = text
-		posts = append(posts, post)
-	}
-	err = res.Err()
-	if err != nil {
-		log.Fatal(err)
-	}
-	t.ExecuteTemplate(resp, "home", posts )
+	go func() {
+		res, err := db.Query("SELECT id, title, text FROM blog_post")
+		if err != nil {
+			panic("Something went wrong with DB query")
+		}
+		defer res.Close()
+		for res.Next() {
+			err := res.Scan(&id, &title, &text)
+			if err != nil {
+				log.Fatal(err)
+			}
+			post["title"] = title
+			post["text"] = text
+			post_go <- post
+		}
+		err = res.Err()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+	posts_go := <- post_go
+	t.ExecuteTemplate(resp, "home", posts_go)
 }
 
 func contactPage(resp http.ResponseWriter, req *http.Request){
