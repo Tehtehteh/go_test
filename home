@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ayoo nigga</title>
+</head>
+<body>
+    <h1>Hello</h1>
+    <div class="content">
+        {{ range $key, $value := . }}
+            <div class="blog_post">
+                <div class="header">
+                    {{$value.title}}
+                </div>
+                <div class="post_content">
+                    {{$value.text}}
+                </div>
+            </div>
+        {{ end }}
+    </div>
+</body>
+</html>
